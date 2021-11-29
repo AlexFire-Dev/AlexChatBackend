@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-t&wh^ipce47nty8*l3!%l465_@75f=7s6hcmgh!yru=94n9r-$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -42,7 +42,11 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'drf_yasg',
     'djoser',
+
+    'apps.oauth',
 ]
+
+AUTH_USER_MODEL = 'oauth.AuthUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -137,4 +141,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ]
+}
+
+
+DJOSER = {
+    'LOGIN_FIELD': 'email'
 }
