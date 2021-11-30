@@ -40,10 +40,12 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'rest_framework.authtoken',
+    'channels',
     'drf_yasg',
     'djoser',
 
     'apps.oauth',
+    'apps.groups',
 ]
 
 AUTH_USER_MODEL = 'oauth.AuthUser'
@@ -77,6 +79,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'AlexChatBackend.wsgi.application'
+ASGI_APPLICATION = 'AlexChatBackend.asgi.application'
 
 
 # Database
@@ -145,5 +148,31 @@ REST_FRAMEWORK = {
 
 
 DJOSER = {
-    'LOGIN_FIELD': 'email'
+    'LOGIN_FIELD': 'email',
+    'SERIALIZERS': {
+        'user': 'apps.oauth.serializers.AuthUserSerializer',
+        'current_user': 'apps.oauth.serializers.AuthUserSerializer',
+    }
+}
+
+
+# Swagger settings
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
+}
+
+
+# Django Channels
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
 }
