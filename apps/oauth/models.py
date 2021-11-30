@@ -1,4 +1,6 @@
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import PermissionsMixin
 from django.core.validators import FileExtensionValidator
 from django.db import models
 
@@ -41,16 +43,17 @@ class AuthUserManager(BaseUserManager):
             email,
             password=password,
         )
-        user.staff = True
-        user.admin = True
+        user.is_superuser = True
+        user.is_staff = True
         user.save(using=self._db)
         return user
 
 
-class AuthUser(AbstractBaseUser):
+class AuthUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=30, blank=True, null=True)
     email = models.EmailField(max_length=150, unique=True)
     join_date = models.DateTimeField(auto_now_add=True)
+
     avatar = models.ImageField(
         upload_to=get_path_upload_avatar,
         blank=True,
@@ -58,9 +61,19 @@ class AuthUser(AbstractBaseUser):
         validators=[FileExtensionValidator(allowed_extensions=['jpg']), validate_size_image]
     )
 
-    is_active = models.BooleanField(default=True)
-    staff = models.BooleanField(default=False)
-    superuser = models.BooleanField(default=False)
+    is_staff = models.BooleanField(
+        _('staff status'),
+        default=False,
+        help_text=_('Designates whether the user can log into this admin site.'),
+    )
+    is_active = models.BooleanField(
+        _('active'),
+        default=True,
+        help_text=_(
+            'Designates whether this user should be treated as active. '
+            'Unselect this instead of deleting accounts.'
+        ),
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -69,13 +82,3 @@ class AuthUser(AbstractBaseUser):
 
     def __str__(self):
         return f'{self.email}'
-
-    @property
-    def is_staff(self):
-        """ Is the user a member of staff? """
-        return self.staff
-
-    @property
-    def is_admin(self):
-        """ Is the user a superuser member? """
-        return self.superuser
