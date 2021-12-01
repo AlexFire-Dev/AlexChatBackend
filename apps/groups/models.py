@@ -1,3 +1,6 @@
+import binascii
+import os
+
 from django.contrib.auth import get_user_model
 from django.db import models
 
@@ -36,3 +39,20 @@ class GroupMessage(models.Model):
 
     def __str__(self) -> str:
         return f'{self.author}: {self.text}'
+
+
+class GroupInviteLink(models.Model):
+    group = models.OneToOneField(Group, on_delete=models.CASCADE, related_name='group_invitelink')
+    key = models.CharField(max_length=40, unique=True, null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.key:
+            self.key = self.generate_key()
+        return super().save(*args, **kwargs)
+
+    @classmethod
+    def generate_key(cls):
+        return binascii.hexlify(os.urandom(20)).decode()
+
+    def __str__(self):
+        return f'{self.group}'

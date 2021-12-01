@@ -5,5 +5,8 @@ from .views import *
 
 urlpatterns = [
     path('', GroupViewSet.as_view({'get': 'list', 'post': 'create'})),
-    path('<int:pk>/', GroupViewSet.as_view({'get': 'retrieve', 'put': 'partial_update'})),
+    path('<int:pk>/', GroupViewSet.as_view({'get': 'retrieve', 'put': 'partial_update', 'delete': 'destroy'})),
+
+    path('membership/', GroupMemberViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('membership/<int:pk>/', GroupMemberViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
 ]
