@@ -2,6 +2,7 @@ import json
 from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
 
+from .serializers import *
 from .models import *
 
 
@@ -44,7 +45,16 @@ class GroupConsumer(WebsocketConsumer):
         except:
             return
 
-        if event == 'message.send':
+        if event == 'message.load':
+            messages = GroupMessage.objects.filter(author__group=self.group)
+            serializer = GroupMessageSerializer(messages, many=True)
+
+            self.send(text_data=json.dumps({
+                'type': 'message.load',
+                'messages': serializer.data
+            }))
+
+        elif event == 'message.send':
             try:
                 message = text_data_json['message']
             except:
@@ -62,20 +72,9 @@ class GroupConsumer(WebsocketConsumer):
 
     def message_sent(self, event):
         message: GroupMessage = event['message']
+        serializer = GroupMessageSerializer(message)
 
         self.send(text_data=json.dumps({
             'type': 'message.sent',
-            'message': {
-                'id': message.id,
-                'author': {
-                    'id': message.author.id,
-                    'user': {
-                        'email': message.author.user.email,
-                        'username': message.author.user.username
-                    }
-                },
-                'text': message.text,
-                'created': message.created.strftime('%Y.%m.%d %H:%M'),
-                'updated': message.updated.strftime('%Y.%m.%d %H:%M')
-            }
+            'message': serializer.data
         }))

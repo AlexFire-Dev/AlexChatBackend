@@ -5,6 +5,7 @@ from rest_framework import serializers
 
 from djoser.compat import get_user_email_field_name, get_user_email
 
+
 User = get_user_model()
 
 

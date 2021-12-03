@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+
+  workflow_dispatch:
+
+jobs:
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: CD
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            cd ${{ secrets.DIRECTORY }}
+            sudo git pull
+            docker tag alexchatbackend_web:latest alexchatbackend_web:old
+            docker build -t alexchatbackend_web:latest .
+            docker-compose pull --quiet
+            docker-compose down
+            docker-compose up --detach
+            docker image rm alexchatbackend_web:old
