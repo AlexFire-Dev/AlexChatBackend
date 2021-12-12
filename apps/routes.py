@@ -9,6 +9,7 @@ schema_view = get_schema_view(
         title='AlexChat',
         default_version='v1',
         description='Backend of AlexChat',
+        url='https://chat.alexfire.shvarev.com/api/v1/',
         contact=openapi.Contact(email='alex@shvarev.com')
     ),
     public=True,
