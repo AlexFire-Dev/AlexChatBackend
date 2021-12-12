@@ -29,6 +29,7 @@ class GetUpdateGroupSerializer(serializers.ModelSerializer):
 
 class GroupMemberSerializer(serializers.ModelSerializer):
     user = UserSerializer()
+    group = GetUpdateGroupSerializer()
 
     class Meta:
         model = models.GroupMember
