@@ -57,6 +57,8 @@ class GroupConsumer(WebsocketConsumer):
             }))
 
         elif event == 'message.send':
+            from aioapns import APNs, NotificationRequest, PushType
+
             try:
                 message = text_data_json['message']
             except:
@@ -72,38 +74,38 @@ class GroupConsumer(WebsocketConsumer):
                 }
             )
 
-    def message_sent(self, event):
-        from aioapns import APNs, NotificationRequest, PushType
+            query = NotificationToken.objects.filter(user__groups=self.group)
 
+            for obj in query:
+                if message.author.user != obj.user:
+                    try:
+                        token = obj.key
+
+                        if token:
+                            apns_key_client = APNs(
+                                key='/apps/oauth/apple/apns-key.p8',
+                                key_id=os.getenv('APNS_KEY_ID'),
+                                team_id=os.getenv('APNS_TEAM_ID'),
+                                topic=os.getenv('APNS_TOPIC'),
+                                use_sandbox=False,
+                            )
+
+                            request = NotificationRequest(
+                                device_token=token,
+                                message={
+                                    'aps': {
+                                        'alert': message.text,
+                                    }
+                                }
+                            )
+
+                            async_to_sync(apns_key_client.send_notification)(request)
+                    except:
+                        pass
+
+    def message_sent(self, event):
         message: GroupMessage = event['message']
         serializer = GroupMessageSerializer(message)
-
-        if message.author != self.member:
-            try:
-                notification = NotificationToken.objects.get_or_create(user=self.member.user)
-                token = notification.key
-
-                if token:
-                    apns_key_client = APNs(
-                        key='/apple/apns-key.p8',
-                        key_id=os.getenv('APNS_KEY_ID'),
-                        team_id=os.getenv('APNS_TEAM_ID'),
-                        topic=os.getenv('APNS_TOPIC'),
-                        use_sandbox=False,
-                    )
-
-                    request = NotificationRequest(
-                        device_token=token,
-                        message={
-                            'aps': {
-                                'alert': message.text,
-                            }
-                        }
-                    )
-
-                    async_to_sync(apns_key_client.send_notification)(request)
-            except:
-                pass
 
         self.send(text_data=json.dumps({
             'type': 'message.sent',
