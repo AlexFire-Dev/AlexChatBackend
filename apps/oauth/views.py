@@ -14,7 +14,7 @@ class NotificationTokenViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def update(self, request):
-        instance = NotificationToken.objects.get_or_create(user=self.request.user)
+        instance, _ = NotificationToken.objects.get_or_create(user=self.request.user)
         serializer = serializers.NotificationTokenSerializer(
             instance,
             data=request.data,
