@@ -89,7 +89,7 @@ class GroupConsumer(WebsocketConsumer):
                                 key_id=os.getenv('APNS_KEY_ID'),
                                 team_id=os.getenv('APNS_TEAM_ID'),
                                 topic=os.getenv('APNS_TOPIC'),
-                                use_sandbox=False,
+                                use_sandbox=True,
                             )
 
                             request = NotificationRequest(
