@@ -57,6 +57,7 @@ class GroupConsumer(WebsocketConsumer):
             }))
 
         elif event == 'message.send':
+            import asyncio
             from aioapns import APNs, NotificationRequest, PushType
 
             try:
@@ -97,7 +98,9 @@ class GroupConsumer(WebsocketConsumer):
                                 }
                             }
                         )
-                        async_to_sync(apns_key_client.send_notification)(request)
+
+                        loop = asyncio.get_event_loop()
+                        loop.run_until_complete(apns_key_client.send_notification(request))
 
     def message_sent(self, event):
         message: GroupMessage = event['message']
