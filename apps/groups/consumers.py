@@ -76,10 +76,13 @@ class GroupConsumer(WebsocketConsumer):
                 }
             )
 
-            users = GroupMember.objects.filter(group=self.group).values('user')
+            members = GroupMember.objects.filter(group=self.group)
             query = []
-            for user in users:
-                query.append(NotificationToken.objects.get(user=user))
+            for member in members:
+                try:
+                    query.append(NotificationToken.objects.get(user=member.user))
+                except:
+                    pass
 
             for obj in query:
                 if message.author.user != obj.user:
