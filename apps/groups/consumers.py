@@ -78,30 +78,26 @@ class GroupConsumer(WebsocketConsumer):
 
             for obj in query:
                 if message.author.user != obj.user:
-                    try:
-                        token = obj.key
+                    token = obj.key
 
-                        if token:
-                            apns_key_client = APNs(
-                                key='/apps/oauth/apple/apns-key.p8',
-                                key_id=os.getenv('APNS_KEY_ID'),
-                                team_id=os.getenv('APNS_TEAM_ID'),
-                                topic=os.getenv('APNS_TOPIC'),
-                                use_sandbox=False,
-                            )
+                    if token:
+                        apns_key_client = APNs(
+                            key='/apps/oauth/apple/apns-key.p8',
+                            key_id=os.getenv('APNS_KEY_ID'),
+                            team_id=os.getenv('APNS_TEAM_ID'),
+                            topic=os.getenv('APNS_TOPIC'),
+                            use_sandbox=False,
+                        )
 
-                            request = NotificationRequest(
-                                device_token=token,
-                                message={
-                                    'aps': {
-                                        'alert': message.text,
-                                    }
+                        request = NotificationRequest(
+                            device_token=token,
+                            message={
+                                'aps': {
+                                    'alert': message.text,
                                 }
-                            )
-
-                            async_to_sync(apns_key_client.send_notification)(request)
-                    except:
-                        pass
+                            }
+                        )
+                        async_to_sync(apns_key_client.send_notification)(request)
 
     def message_sent(self, event):
         message: GroupMessage = event['message']
