@@ -5,6 +5,8 @@ from rest_framework import serializers
 
 from djoser.compat import get_user_email_field_name, get_user_email
 
+from .models import *
+
 
 User = get_user_model()
 
@@ -29,4 +31,5 @@ class AuthUserSerializer(UserSerializer):
 
 class NotificationTokenSerializer(serializers.ModelSerializer):
     class Meta:
+        model = NotificationToken
         fields = ('key',)
