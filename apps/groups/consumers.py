@@ -76,7 +76,7 @@ class GroupConsumer(WebsocketConsumer):
                 }
             )
 
-            members = GroupMember.objects.filter(group=self.group)
+            members = GroupMember.objects.filter(group=self.group, active=True, banned=False)
             query = []
             for member in members:
                 try:

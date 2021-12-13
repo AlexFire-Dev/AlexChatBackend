@@ -25,3 +25,8 @@ class AuthUserSerializer(UserSerializer):
                 instance.is_active = False
                 instance.save(update_fields=["is_active"])
         return super().update(instance, validated_data)
+
+
+class NotificationTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('key',)
