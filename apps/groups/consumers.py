@@ -84,7 +84,7 @@ class GroupConsumer(WebsocketConsumer):
                     if token:
                         async def run():
                             apns_key_client = APNs(
-                                key='/apps/oauth/apple/apns-key.p8',
+                                key='/apple/apns-key.p8',
                                 key_id=os.getenv('APNS_KEY_ID'),
                                 team_id=os.getenv('APNS_TEAM_ID'),
                                 topic=os.getenv('APNS_TOPIC'),

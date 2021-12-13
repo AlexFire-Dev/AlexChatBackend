@@ -5,6 +5,6 @@
 /media/
 /static/
 
-/apps/oauth/apple/apns-key.p8
+/apps/groups/apple/apns-key.p8
 
 conf.env
