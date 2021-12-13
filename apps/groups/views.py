@@ -116,6 +116,8 @@ class GroupMemberViewSet(viewsets.ViewSet):
 class GroupMessageViewSet(viewsets.ViewSet):
     """ ViewSet сообщений группы """
 
+    permission_classes = [permissions.IsAuthenticated]
+
     messages_response = openapi.Response('', serializers.GroupMessageSerializer(many=True))
 
     @swagger_auto_schema(responses={'200': messages_response})
