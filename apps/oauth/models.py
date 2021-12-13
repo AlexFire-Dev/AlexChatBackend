@@ -82,3 +82,8 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f'{self.email}'
+
+
+class NotificationToken(models.Model):
+    user = models.OneToOneField(AuthUser, on_delete=models.CASCADE, null=True, blank=True)
+    key = models.TextField()

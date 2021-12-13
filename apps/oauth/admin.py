@@ -7,3 +7,8 @@ from .models import *
 class AuthUserAdmin(admin.ModelAdmin):
     list_display = ('id', 'email', 'username')
     list_display_links = ('email',)
+
+
+@admin.register(NotificationToken)
+class NotificationTokenAdmin(admin.ModelAdmin):
+    list_editable = ('id', 'user')
