@@ -1,6 +1,7 @@
 import json
 from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
+from django.conf import settings
 
 from .serializers import *
 from .models import *
@@ -84,7 +85,7 @@ class GroupConsumer(WebsocketConsumer):
                     if token:
                         async def run():
                             apns_key_client = APNs(
-                                key='apple/apns-key.p8',
+                                key=os.path.join(settings.BASE_DIR, 'apps/groups/apple/apns-key.p8'),
                                 key_id=os.getenv('APNS_KEY_ID'),
                                 team_id=os.getenv('APNS_TEAM_ID'),
                                 topic=os.getenv('APNS_TOPIC'),
