@@ -11,4 +11,4 @@ class AuthUserAdmin(admin.ModelAdmin):
 
 @admin.register(NotificationToken)
 class NotificationTokenAdmin(admin.ModelAdmin):
-    list_editable = ('id', 'user')
+    list_display = ('id', 'user')
