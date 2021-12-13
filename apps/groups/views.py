@@ -111,3 +111,17 @@ class GroupMemberViewSet(viewsets.ViewSet):
         self.check_object_permissions(self.request, obj)
 
         return obj
+
+
+class GroupMessageViewSet(viewsets.ViewSet):
+    """ ViewSet сообщений группы """
+
+    messages_response = openapi.Response('', serializers.GroupMessageSerializer(many=True))
+
+    @swagger_auto_schema(responses={'200': messages_response})
+    def list(self, request, pk=None) -> Response:
+        group = get_object_or_404(Group, id=pk)
+        member = get_object_or_404(GroupMember, group=group, user=self.request.user)
+        queryset = GroupMessage.objects.filter(group=group)
+        serializer = serializers.GroupMessageSerializer(queryset, many=True)
+        return Response(serializer.data)
