@@ -102,7 +102,8 @@ class GroupConsumer(WebsocketConsumer):
 
                             await apns_key_client.send_notification(request)
 
-                        loop = asyncio.get_event_loop()
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
                         loop.run_until_complete(run())
 
     def message_sent(self, event):
