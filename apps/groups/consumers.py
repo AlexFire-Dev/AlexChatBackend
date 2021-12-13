@@ -82,25 +82,28 @@ class GroupConsumer(WebsocketConsumer):
                     token = obj.key
 
                     if token:
-                        apns_key_client = APNs(
-                            key='/apps/oauth/apple/apns-key.p8',
-                            key_id=os.getenv('APNS_KEY_ID'),
-                            team_id=os.getenv('APNS_TEAM_ID'),
-                            topic=os.getenv('APNS_TOPIC'),
-                            use_sandbox=False,
-                        )
+                        async def run():
+                            apns_key_client = APNs(
+                                key='/apps/oauth/apple/apns-key.p8',
+                                key_id=os.getenv('APNS_KEY_ID'),
+                                team_id=os.getenv('APNS_TEAM_ID'),
+                                topic=os.getenv('APNS_TOPIC'),
+                                use_sandbox=False,
+                            )
 
-                        request = NotificationRequest(
-                            device_token=token,
-                            message={
-                                'aps': {
-                                    'alert': message.text,
+                            request = NotificationRequest(
+                                device_token=token,
+                                message={
+                                    'aps': {
+                                        'alert': message.text,
+                                    }
                                 }
-                            }
-                        )
+                            )
+
+                            await apns_key_client.send_notification(request)
 
                         loop = asyncio.get_event_loop()
-                        loop.run_until_complete(apns_key_client.send_notification(request))
+                        loop.run_until_complete(run())
 
     def message_sent(self, event):
         message: GroupMessage = event['message']
