@@ -85,5 +85,5 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
 
 
 class NotificationToken(models.Model):
-    user = models.OneToOneField(AuthUser, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.OneToOneField(AuthUser, on_delete=models.CASCADE, null=True, blank=True, related_name='apns_token')
     key = models.TextField()

@@ -6,7 +6,7 @@ from django.conf import settings
 from .serializers import *
 from .models import *
 
-from ..oauth.models import NotificationToken
+from ..oauth.models import NotificationToken, AuthUser
 
 
 class GroupConsumer(WebsocketConsumer):
@@ -76,7 +76,7 @@ class GroupConsumer(WebsocketConsumer):
                 }
             )
 
-            query = NotificationToken.objects.filter(user_id=1)
+            query = GroupMember.objects.filter(group=self.group).values('user').apns_token
 
             for obj in query:
                 if message.author.user != obj.user:
