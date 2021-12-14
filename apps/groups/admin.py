@@ -17,3 +17,8 @@ class GroupMemberAdmin(admin.ModelAdmin):
 @admin.register(GroupMessage)
 class GroupMessageAdmin(admin.ModelAdmin):
     list_display = ('id', 'author', 'created')
+
+
+@admin.register(GroupInviteLink)
+class GroupInviteLinkAdmin(admin.ModelAdmin):
+    list_display = ('id', 'group', 'key')

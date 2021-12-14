@@ -34,7 +34,7 @@ class GroupViewSet(viewsets.ViewSet):
         serializer.is_valid(raise_exception=True)
         group = serializer.save(creator=request.user)
         GroupMember.objects.create(user=request.user, group=group, admin=True)
-        GroupInviteLink(group=group)
+        GroupInviteLink.objects.create(group=group)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(request_body=serializers.GetUpdateGroupSerializer)
@@ -111,6 +111,19 @@ class GroupMemberViewSet(viewsets.ViewSet):
         self.check_object_permissions(self.request, obj)
 
         return obj
+
+
+class GroupInviteLinkViewSet(viewsets.ViewSet):
+    """ ViewSet кода приглашения """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def retrieve(self, request, pk=None):
+        group = get_object_or_404(Group, id=pk)
+        member = get_object_or_404(GroupMember, group=group, user=self.request.user, admin=True)
+        obj = get_object_or_404(GroupInviteLink, group=group)
+        serializer = serializers.GroupInviteLinkSerializer(obj)
+        return Response(serializer.data)
 
 
 class GroupMessageViewSet(viewsets.ViewSet):
