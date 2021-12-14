@@ -138,7 +138,7 @@ class GroupMessageViewSet(viewsets.ViewSet):
     def list(self, request, pk=None) -> Response:
         group = get_object_or_404(Group, id=pk)
         member = get_object_or_404(GroupMember, group=group, user=self.request.user)
-        queryset = GroupMessage.objects.filter(author__group=group).order_by('id')
+        queryset = GroupMessage.objects.filter(author__group=group).order_by('-id')
 
         paginator = Paginator(queryset, 15)
         page = request.GET.get('page')
