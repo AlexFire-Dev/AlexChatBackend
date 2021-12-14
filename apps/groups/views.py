@@ -85,7 +85,7 @@ class GroupMemberViewSet(viewsets.ViewSet):
 
     @swagger_auto_schema(request_body=serializers.GroupInviteLinkSerializer, responses={'201': membership_response})
     def create(self, request) -> Response:
-        serializer = serializers.GroupInviteLinkSerializer(request.data)
+        serializer = serializers.GroupInviteLinkSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         key = serializer.validated_data['key']
         link = get_object_or_404(GroupInviteLink, key=key)
