@@ -89,7 +89,7 @@ class GroupMemberViewSet(viewsets.ViewSet):
         serializer.is_valid(raise_exception=True)
         key = serializer.validated_data['key']
         link = get_object_or_404(GroupInviteLink, key=key)
-        member = GroupMember.objects.get_or_create(user=request.user, group=link.group)
+        member, _ = GroupMember.objects.get_or_create(user=request.user, group=link.group)
         if not member.banned:
             member.active = True
             member.save()
