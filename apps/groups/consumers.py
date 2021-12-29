@@ -138,7 +138,9 @@ class GroupConsumer(AsyncWebsocketConsumer):
         for member in members:
             try:
                 if member != self.member:
-                    query.append(NotificationToken.objects.get(user=member.user))
+                    notification_token = NotificationToken.objects.get(user=member.user)
+                    if notification_token.key != "NONE":
+                        query.append(notification_token)
             except:
                 pass
 
