@@ -1,10 +1,8 @@
 import json
-from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
+from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
 
-import asyncio
 from aioapns import APNs, NotificationRequest, PushType
 from django.core.paginator import Paginator
 
