@@ -6,6 +6,7 @@ from django.conf import settings
 
 import asyncio
 from aioapns import APNs, NotificationRequest, PushType
+from django.core.paginator import Paginator
 
 from .serializers import *
 from .models import *
@@ -50,9 +51,11 @@ class GroupConsumer(AsyncWebsocketConsumer):
             return
 
         if event == 'message.load':
+            message_id = text_data_json.get('message_id')
+
             await self.send(text_data=json.dumps({
                 'type': 'message.load',
-                'messages': await self.getMessages()
+                'messages': await self.getMessages(message_id=message_id)
             }))
 
         elif event == 'message.send':
@@ -116,9 +119,14 @@ class GroupConsumer(AsyncWebsocketConsumer):
             return False
 
     @database_sync_to_async
-    def getMessages(self):
-        messages = GroupMessage.objects.filter(author__group=self.group)
-        serializer = GroupMessageSerializer(messages, many=True)
+    def getMessages(self, message_id=None):
+        if message_id:
+            messages = GroupMessage.objects.filter(author__group=self.group, id__lt=message_id).order_by('-id')
+        else:
+            messages = GroupMessage.objects.filter(author__group=self.group).order_by('-id')
+
+        paginator = Paginator(messages, 15)
+        serializer = GroupMessageSerializer(paginator.page(1), many=True)
         return serializer.data
 
     @database_sync_to_async

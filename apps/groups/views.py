@@ -125,30 +125,3 @@ class GroupInviteLinkViewSet(viewsets.ViewSet):
         obj = get_object_or_404(GroupInviteLink, group=group)
         serializer = serializers.GroupInviteLinkSerializer(obj)
         return Response(serializer.data)
-
-
-class GroupMessageViewSet(viewsets.ViewSet):
-    """ ViewSet сообщений группы """
-
-    permission_classes = [permissions.IsAuthenticated]
-
-    messages_response = openapi.Response('', serializers.GroupMessageSerializer(many=True))
-
-    @swagger_auto_schema(responses={'200': messages_response})
-    def list(self, request, pk=None) -> Response:
-        group = get_object_or_404(Group, id=pk)
-        member = get_object_or_404(GroupMember, group=group, user=self.request.user)
-        queryset = GroupMessage.objects.filter(author__group=group).order_by('id')
-
-        paginator = Paginator(queryset, 15)
-        page = request.GET.get('page')
-
-        try:
-            queryset = paginator.page(paginator.num_pages-int(page)+1)
-        except PageNotAnInteger:
-            queryset = paginator.page(1)
-        except:
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-        serializer = serializers.GroupMessageSerializer(queryset, many=True)
-        return Response(serializer.data)
