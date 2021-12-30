@@ -74,7 +74,7 @@ class GroupMemberViewSet(viewsets.ViewSet):
 
     @swagger_auto_schema(responses={'200': memberships_response})
     def list(self, request) -> Response:
-        queryset = GroupMember.objects.filter(user=request.user)
+        queryset = GroupMember.objects.filter(user=request.user, active=True, banned=False)
         serializer = serializers.GroupMemberSerializer(queryset, many=True)
         return Response(serializer.data)
 

@@ -111,7 +111,7 @@ class GroupConsumer(AsyncWebsocketConsumer):
     def checkUser(self) -> bool:
         try:
             self.group = Group.objects.get(id=self.group_id)
-            self.member = GroupMember.objects.get(user=self.scope['user'], group=self.group)
+            self.member = GroupMember.objects.get(user=self.scope['user'], group=self.group, active=True, banned=False)
             return True
         except:
             return False
