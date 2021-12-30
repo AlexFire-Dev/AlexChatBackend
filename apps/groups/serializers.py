@@ -36,6 +36,12 @@ class GroupMemberSerializer(serializers.ModelSerializer):
         fields = ('id', 'user', 'group', 'admin', 'active', 'banned')
 
 
+class UpdateGroupMemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.GroupMember
+        fields = ('id', 'admin', 'active', 'banned')
+
+
 class GroupMessageSerializer(serializers.ModelSerializer):
     author = GroupMemberSerializer()
 

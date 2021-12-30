@@ -114,6 +114,36 @@ class GroupMemberViewSet(viewsets.ViewSet):
         return obj
 
 
+class GroupMembersViewSet(viewsets.ViewSet):
+    """ ViewSet всех участников группы """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request, pk=None):
+        group = get_object_or_404(Group, id=pk)
+        member = get_object_or_404(GroupMember, group=group, user=self.request.user, admin=True)
+        members = GroupMember.objects.filter(group=group, active=True, banned=False)
+        serializer = serializers.GroupMemberSerializer(members, many=True)
+        return Response(serializer.data)
+
+    def ban_list(self, request, pk=None):
+        group = get_object_or_404(Group, id=pk)
+        member = get_object_or_404(GroupMember, group=group, user=self.request.user, admin=True)
+        members = GroupMember.objects.filter(group=group, active=False, banned=True)
+        serializer = serializers.GroupMemberSerializer(members, many=True)
+        return Response(serializer.data)
+
+    def partial_update(self, request, pk=None, member_id=None):
+        group = get_object_or_404(Group, id=pk, creator=request.user)
+        instance = get_object_or_404(GroupMember, group=group, id=member_id)
+        if group.creator != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        serializer = serializers.UpdateGroupMemberSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+
 class GroupInviteLinkViewSet(viewsets.ViewSet):
     """ ViewSet кода приглашения """
 
