@@ -1,3 +1,5 @@
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -36,6 +38,17 @@ class GroupViewSet(viewsets.ViewSet):
         group = serializer.save(creator=request.user)
         GroupMember.objects.create(user=request.user, group=group, admin=True)
         GroupInviteLink.objects.create(group=group)
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            'group_join',
+            {
+                'type': 'group_join',
+                'user_id': request.user.id,
+                'group_id': group.id
+            }
+        )
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(request_body=serializers.GetUpdateGroupSerializer)
@@ -52,6 +65,19 @@ class GroupViewSet(viewsets.ViewSet):
         instance = self.get_object(pk)
         if instance.creator != request.user:
             return Response(status=status.HTTP_403_FORBIDDEN)
+
+        members = GroupMember.objects.filter(group=instance, active=True)
+        for member in members:
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'group_{instance.id}',
+                {
+                    'type': 'group_leave',
+                    'user_id': member.user.id,
+                    'group_id': instance.id
+                }
+            )
+
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -94,7 +120,20 @@ class GroupMemberViewSet(viewsets.ViewSet):
         if not member.banned:
             member.active = True
             member.save()
-        return Response(serializers.GroupMemberSerializer(member).data, status=status.HTTP_201_CREATED)
+
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                'group_join',
+                {
+                    'type': 'group_join',
+                    'user_id': request.user.id,
+                    'group_id': member.group.id
+                }
+            )
+
+            return Response(serializers.GroupMemberSerializer(member).data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
     def destroy(self, request, pk=None) -> Response:
         instance = self.get_object(pk)
@@ -102,6 +141,17 @@ class GroupMemberViewSet(viewsets.ViewSet):
             instance.admin = False
             instance.active = False
             instance.save()
+
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'group_{instance.group.id}',
+                {
+                    'type': 'group_leave',
+                    'user_id': instance.user.id,
+                    'group_id': instance.group.id
+                }
+            )
+
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -121,14 +171,14 @@ class GroupMembersViewSet(viewsets.ViewSet):
 
     def list(self, request, pk=None):
         group = get_object_or_404(Group, id=pk)
-        member = get_object_or_404(GroupMember, group=group, user=self.request.user, admin=True)
+        member = get_object_or_404(GroupMember, group=group, user=self.request.user, active=True)
         members = GroupMember.objects.filter(group=group, active=True, banned=False)
         serializer = serializers.GroupMemberSerializer(members, many=True)
         return Response(serializer.data)
 
     def ban_list(self, request, pk=None):
         group = get_object_or_404(Group, id=pk)
-        member = get_object_or_404(GroupMember, group=group, user=self.request.user, admin=True)
+        member = get_object_or_404(GroupMember, group=group, user=self.request.user, admin=True, active=True)
         members = GroupMember.objects.filter(group=group, active=False, banned=True)
         serializer = serializers.GroupMemberSerializer(members, many=True)
         return Response(serializer.data)
@@ -141,6 +191,18 @@ class GroupMembersViewSet(viewsets.ViewSet):
         serializer = serializers.UpdateGroupMemberSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        if not instance.active:
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'group_{instance.group.id}',
+                {
+                    'type': 'group_leave',
+                    'user_id': instance.user.id,
+                    'group_id': instance.group.id
+                }
+            )
+
         return Response(serializer.data)
 
 

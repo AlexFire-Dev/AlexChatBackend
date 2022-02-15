@@ -1,7 +1,15 @@
 from django.urls import path, include
 from drf_yasg import openapi
+from drf_yasg.generators import OpenAPISchemaGenerator
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+
+
+class BothHttpAndHttpsSchemaGenerator(OpenAPISchemaGenerator):
+    def get_schema(self, request=None, public=False):
+        schema = super().get_schema(request, public)
+        schema.schemes = ["http", "https"]
+        return schema
 
 
 schema_view = get_schema_view(
@@ -11,7 +19,7 @@ schema_view = get_schema_view(
         description='Backend of AlexChat',
         contact=openapi.Contact(email='alex@shvarev.com')
     ),
-    url='https://chat.alexfire.shvarev.com/api/v1/',
+    generator_class=BothHttpAndHttpsSchemaGenerator,
     public=True,
     permission_classes=(permissions.AllowAny, ),
 )

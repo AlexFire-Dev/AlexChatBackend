@@ -4,5 +4,5 @@ from .groups.consumers import *
 
 
 websocket_urlpatterns = [
-    path('ws/groups/<int:pk>/', GroupConsumer.as_asgi())
+    path('groups/connect/', GroupConsumer.as_asgi())
 ]
