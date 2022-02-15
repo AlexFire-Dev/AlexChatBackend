@@ -20,7 +20,7 @@ class GroupConsumer(AsyncWebsocketConsumer):
     connected_groups: [Group] = []
 
     async def connect(self):
-        if self.scope['user'] == AnonymousUser():
+        if self.scope['user'] == AnonymousUser() or self.scope['user'].online:
             return
 
         await self.accept()
@@ -38,11 +38,35 @@ class GroupConsumer(AsyncWebsocketConsumer):
                 self.channel_name
             )
 
+        await self.setOnline()
+        for groupId in await self.getGroupIds():
+            group_name = f'group_{groupId}'
+            await self.channel_layer.group_send(
+                group_name,
+                {
+                    'type': 'user_online',
+                    'user_id': self.scope['user'].id,
+                    'online': True
+                }
+            )
+
     async def disconnect(self, code):
         await self.channel_layer.group_discard(
             'group_join',
             self.channel_name
         )
+
+        await self.setOffline()
+        for groupId in await self.getGroupIds():
+            group_name = f'group_{groupId}'
+            await self.channel_layer.group_send(
+                group_name,
+                {
+                    'type': 'user_online',
+                    'user_id': self.scope['user'].id,
+                    'online': False
+                }
+            )
 
         for groupId in await self.getGroupIds():
             group_name = f'group_{groupId}'
@@ -146,6 +170,25 @@ class GroupConsumer(AsyncWebsocketConsumer):
             'message': await self.getMessage(message)
         }))
 
+    async def user_online(self, event):
+        """
+        {
+            "user_id": int,
+            "online": bool
+        }
+        """
+
+        if event['online']:
+            await self.send(text_data=json.dumps({
+                'type': 'member.online',
+                'user_id': event['user_id']
+            }))
+        else:
+            await self.send(text_data=json.dumps({
+                'type': 'member.offline',
+                'user_id': event['user_id']
+            }))
+
     async def group_join(self, event):
         """
         {
@@ -194,7 +237,18 @@ class GroupConsumer(AsyncWebsocketConsumer):
             }))
 
     @database_sync_to_async
+    def setOnline(self):
+        self.scope['user'].online = True
+        self.scope['user'].save()
+
+    @database_sync_to_async
+    def setOffline(self):
+        self.scope['user'].online = False
+        self.scope['user'].save()
+
+    @database_sync_to_async
     def setup(self):
+        self.connected_groups = []
         memberships = GroupMember.objects.filter(user=self.scope['user'], active=True)
         for membership in memberships:
             self.connected_groups.append(membership.group)

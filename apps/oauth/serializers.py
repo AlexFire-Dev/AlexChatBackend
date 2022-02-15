@@ -17,6 +17,7 @@ class AuthUserSerializer(UserSerializer):
             settings.USER_ID_FIELD,
             settings.LOGIN_FIELD,
             'username',
+            'online'
         )
 
     def update(self, instance, validated_data):

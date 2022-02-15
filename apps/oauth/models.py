@@ -54,6 +54,8 @@ class AuthUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=150, unique=True)
     join_date = models.DateTimeField(auto_now_add=True)
 
+    online = models.BooleanField(default=False)
+
     avatar = models.ImageField(
         upload_to=get_path_upload_avatar,
         blank=True,
