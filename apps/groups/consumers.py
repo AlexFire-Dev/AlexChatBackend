@@ -20,8 +20,10 @@ class GroupConsumer(AsyncWebsocketConsumer):
     connected_groups: [Group] = []
 
     async def connect(self):
-        if self.scope['user'] == AnonymousUser() or self.scope['user'].online:
-            return
+        # if self.scope['user'] == AnonymousUser() or self.scope['user'].online
+        if self.scope['user'] == AnonymousUser():
+            """ 403 - Запрещено """
+            return await self.close()
 
         await self.accept()
         await self.setup()
@@ -129,32 +131,32 @@ class GroupConsumer(AsyncWebsocketConsumer):
             )
 
             # Отправка уведомлений
-            # query = await self.getNotificationTokenQuery(group_id=group_id)
-            #
-            # apns_key_client = APNs(
-            #     key=os.path.join(settings.BASE_DIR, 'apps/groups/apple/apns-key.p8'),
-            #     key_id=os.getenv('APNS_KEY_ID'),
-            #     team_id=os.getenv('APNS_TEAM_ID'),
-            #     topic=os.getenv('APNS_TOPIC'),
-            #     use_sandbox=True,
-            # )
-            #
-            # for obj in query:
-            #     token = obj.key
-            #
-            #     request = NotificationRequest(
-            #         device_token=token,
-            #         message={
-            #             'aps': {
-            #                 'alert': message.text,
-            #             }
-            #         }
-            #     )
-            #
-            #     try:
-            #         await apns_key_client.send_notification(request)
-            #     except:
-            #         pass
+            query = await self.getNotificationTokenQuery(group_id=group_id)
+
+            apns_key_client = APNs(
+                key=os.path.join(settings.BASE_DIR, 'apps/groups/apple/apns-key.p8'),
+                key_id=os.getenv('APNS_KEY_ID'),
+                team_id=os.getenv('APNS_TEAM_ID'),
+                topic=os.getenv('APNS_TOPIC'),
+                use_sandbox=True,
+            )
+
+            for obj in query:
+                token = obj.key
+
+                request = NotificationRequest(
+                    device_token=token,
+                    message={
+                        'aps': {
+                            'alert': f'{message.author.grroup.name}: {message.text}',
+                        }
+                    }
+                )
+
+                try:
+                    await apns_key_client.send_notification(request)
+                except:
+                    pass
 
     async def message_sent(self, event):
         """
