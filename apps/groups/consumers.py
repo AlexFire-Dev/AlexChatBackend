@@ -148,7 +148,7 @@ class GroupConsumer(AsyncWebsocketConsumer):
                     device_token=token,
                     message={
                         'aps': {
-                            'alert': f'{message.author.grroup.name}: {message.text}',
+                            'alert': f'{message.author.group.name}: {message.text}',
                         }
                     }
                 )
