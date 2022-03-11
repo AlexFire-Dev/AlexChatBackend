@@ -122,13 +122,13 @@ class GroupConsumer(AsyncWebsocketConsumer):
 
             message, author = await self.createMessage(group_id=group_id, text=message)
 
-            message = await self.getMessage(message)
+            message_send = await self.getMessage(message)
 
             await self.channel_layer.group_send(
                 f'group_{group_id}',
                 {
                     'type': 'message_sent',
-                    'message': message
+                    'message': message_send
                 }
             )
 
@@ -173,7 +173,7 @@ class GroupConsumer(AsyncWebsocketConsumer):
         }
         """
 
-        message: GroupMessage = event['message']
+        message = event['message']
 
         await self.send(text_data=json.dumps({
             'type': 'message.sent',
