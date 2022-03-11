@@ -187,8 +187,17 @@ SWAGGER_SETTINGS = {
 
 # Django Channels
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+if DEBUG:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer'
+        }
     }
-}
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.pubsub.RedisPubSubChannelLayer',
+            'CONFIG': {
+            },
+        },
+    }
