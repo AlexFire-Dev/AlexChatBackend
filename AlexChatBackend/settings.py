@@ -198,6 +198,7 @@ else:
         'default': {
             'BACKEND': 'channels_redis.pubsub.RedisPubSubChannelLayer',
             'CONFIG': {
+                'hosts': [(os.getenv('REDIS_HOST'), int(os.getenv('REDIS_PORT', '6379')))]
             },
         },
     }
