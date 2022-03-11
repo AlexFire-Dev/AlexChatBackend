@@ -120,7 +120,9 @@ class GroupConsumer(AsyncWebsocketConsumer):
             except:
                 return
 
-            message = await self.createMessage(group_id=group_id, text=message)
+            message, author = await self.createMessage(group_id=group_id, text=message)
+
+            message = await self.getMessage(message)
 
             await self.channel_layer.group_send(
                 f'group_{group_id}',
@@ -161,7 +163,13 @@ class GroupConsumer(AsyncWebsocketConsumer):
     async def message_sent(self, event):
         """
         {
-            "message": GroupMessage
+            "message": {
+                "id": int,
+                "author": {},
+                "text": str,
+                "created": date,
+                "updated": date
+            }
         }
         """
 
@@ -295,10 +303,10 @@ class GroupConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def createMessage(self, group_id, text):
         author = GroupMember.objects.get(group_id=group_id, user=self.scope['user'], active=True)
-        return GroupMessage.objects.create(author=author, text=text)
+        return GroupMessage.objects.create(author=author, text=text), author
 
     @database_sync_to_async
-    def getMessage(self, message: GroupMessage):
+    def getMessage(self, message: dict):
         serializer = GroupMessageSerializer(message)
         return serializer.data
 
